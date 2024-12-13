@@ -1,6 +1,6 @@
 <!-- @format -->
 
-<h1 align="center">Demonstrator for Student Certificates</h1><br/>
+<h1 align="center">Demonstrator for Student Certificates</h1>
 
 <p align="center">
   <a href="https://python.org/downloads/release/python-3123/">
