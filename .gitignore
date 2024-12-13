@@ -1,0 +1,27 @@
+# Byte-compiled / optimized / DLL files 
+__pycache__/
+*.py[cod]
+*$py.class
+**/*.pyc
+
+# VS Code
+/.vscode
+
+# Environment
+.*_env/
+**/brski-py
+
+# Sphinx
+**/docs/build/*
+**/docs/source/_modules/*
+
+
+# Project specific
+*.crt
+*.key
+*.pem
+*.crl
+*.csr
+*passphrase*.txt
+*.log
+**/enrollment_status.json
