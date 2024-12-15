@@ -24,4 +24,4 @@ __pycache__/
 *.csr
 *passphrase*.txt
 *.log
-**/enrollment_status.json
+**/data/*
