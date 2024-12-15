@@ -1,16 +1,19 @@
 import datetime
 from os import makedirs, path
 
-from Certificates.Keys import (generate_passphrase, generate_rsa_keys,
-                               load_passphrase_from_path,
-                               load_private_key_from_path)
+from certificates.Keys import (
+    generate_passphrase,
+    generate_rsa_keys,
+    load_passphrase_from_path,
+    load_private_key_from_path,
+)
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric.types import PrivateKeyTypes
 from cryptography.hazmat.primitives.serialization import Encoding
 from cryptography.x509.oid import NameOID
-from Utils.Config import Config
+from shared_util.Config import Config
 
 
 def generate_certificate_authority(
@@ -19,7 +22,7 @@ def generate_certificate_authority(
     country_code: str,
     common_name: str,
     days_valid: int = 1825,
-    passphrase_length: int = 30
+    passphrase_length: int = 30,
 ) -> tuple[str, str, str, str]:
     """
     Generate a self-signed root certificate and save it to a file.
@@ -30,7 +33,7 @@ def generate_certificate_authority(
         common_name (str): The common name associated with the certificate.
         days_valid (int): The number of days the certificate will be valid (default is 1825).
         passphrase_length (int): The length of the passphrase used to encrypt the private key (default is 30).
-        
+
     Returns:
         Tuple:
         - str: The path to the generated certificate file.

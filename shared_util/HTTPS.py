@@ -6,7 +6,7 @@ import ssl
 import threading
 import time
 
-from Certificates.Keys import load_passphrase_from_path
+from Keys import load_passphrase_from_path
 
 
 def load_local_cas(context: ssl.SSLContext, ca_files: list) -> ssl.SSLContext:

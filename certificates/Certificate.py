@@ -1,14 +1,18 @@
 import datetime
-from os import makedirs, path
+import os
+import sys
 
-from Certificates.CA import load_ca, sign_certificate
-from Certificates.Keys import setup_private_key
+# Add parent directory to path
+script_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.abspath(os.path.join(script_dir, os.pardir))
+sys.path.append(parent_dir)
+
+from certificates.CA import load_ca, sign_certificate
+from certificates.Keys import setup_private_key
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.x509.oid import NameOID
-from pyasn1.codec.der import encoder
-from pyasn1.type import char, namedtype, univ  # type: ignore
 
 
 def load_request_from_bytes(data: bytes) -> x509.CertificateSigningRequest:
@@ -134,10 +138,10 @@ def save_cert_to_file(
     Returns:
         file_path (str): Path to the saved certificate file.
     """
-    if not path.exists(dest_folder):
-        makedirs(dest_folder)
+    if not os.path.exists(dest_folder):
+        os.makedirs(dest_folder)
 
-    file_path = path.join(dest_folder, f"{file_prefix}_{common_name.lower()}.crt")
+    file_path = os.path.join(dest_folder, f"{file_prefix}_{common_name.lower()}.crt")
     with open(file_path, "wb") as device_cert_file:
         device_cert_file.write(cert.public_bytes(serialization.Encoding.PEM))
 
@@ -163,10 +167,10 @@ def save_request_to_file(
     Returns:
         file_path (str): Path to the saved certificate request file.
     """
-    if not path.exists(dest_folder):
-        makedirs(dest_folder)
+    if not os.path.exists(dest_folder):
+        os.makedirs(dest_folder)
 
-    file_path = path.join(dest_folder, f"{file_prefix}_{common_name.lower()}.csr")
+    file_path = os.path.join(dest_folder, f"{file_prefix}_{common_name.lower()}.csr")
     with open(file_path, "wb") as request_file:
         request_file.write(request.public_bytes(serialization.Encoding.PEM))
 
@@ -177,7 +181,6 @@ def generate_certificate_request_builder(
     *,
     country_code: str,
     common_name: str,
-    serialnumber: str = "",
     hostname: str = "",
     organization_name: str = "",
     organizational_unit_name: str = "",
@@ -214,9 +217,6 @@ def generate_certificate_request_builder(
         nameAttributes.append(x509.NameAttribute(NameOID.COMMON_NAME, hostname))
     else:
         nameAttributes.append(x509.NameAttribute(NameOID.COMMON_NAME, common_name))
-
-    if serialnumber:
-        nameAttributes.append(x509.NameAttribute(NameOID.SERIAL_NUMBER, serialnumber))
 
     request_builder = x509.CertificateSigningRequestBuilder().subject_name(
         x509.Name(nameAttributes)
@@ -459,225 +459,3 @@ def generate_ra_cert(
 
     save_cert_to_file(cert, dest_folder, common_name=common_name)
     return cert
-
-
-def generate_idevid_cert(
-    ca_cert_path: str,
-    ca_key_path: str,
-    ca_passphrase_path: str,
-    dest_folder: str,
-    *,
-    country_code: str,
-    serialnumber: str,
-    organization_name: str,
-    organizational_unit_name: str,
-    common_name: str,
-    masa_url: str,
-    hwtype: str = "",
-    hwSerialNum: str = "",
-) -> x509.Certificate:
-    """
-    Generate an idevid device certificate.
-
-    Args:
-        ca_cert_path (str): Path to the ca certificate file.
-        ca_key_path (str): Path to the ca private key file.
-        ca_passphrase_path (str): Passphrase for the ca private key.
-        dest_folder (str): Destination folder to save the device certificate.
-        country_code (str): Country code for the device certificate.
-        serialnumber (str): Serial number for the device.
-        organization_name (str): Organization name for the device certificate.
-        organizational_unit_name (str): Organizational unit name for the device certificate.
-        common_name (str): Common name for the device certificate.
-        masa_url (str): URL of the MASA server.
-        expiration_days (int): Number of days until the certificate expires. Default is 365.
-        hwtype (str): OID of Hardware Modules Type. Default is None.
-        hwSerialNum (str): Serial Number of the hardware Module. Default is None.
-
-    Returns:
-        cert (Certificate): Generated certificate.
-    """
-
-    ca_cert, ca_key = load_ca(ca_cert_path, ca_key_path, ca_passphrase_path)
-    private_key, _, _ = setup_private_key(dest_folder, common_name)
-
-    useOtherName = hwtype != "" and hwSerialNum != ""
-
-    if useOtherName:
-
-        class OtherName(univ.Sequence):
-            componentType = namedtype.NamedTypes(
-                namedtype.NamedType("hwType", univ.ObjectIdentifier()),
-                namedtype.NamedType("hwSerialNum", univ.OctetString()),
-            )
-
-        # Create an instance of your data
-        data = OtherName()
-        data["hwType"] = univ.ObjectIdentifier(hwtype)
-        data["hwSerialNum"] = hwSerialNum
-
-        der_data = encoder.encode(data)
-
-        alternative_name = x509.SubjectAlternativeName(
-            [
-                x509.OtherName(
-                    x509.ObjectIdentifier("1.3.6.1.5.5.7.8.4"), der_data
-                )  # id-on-hardwareModuleName OID
-            ]
-        )
-
-    # Generate CSR
-    request = generate_certificate_request_builder(
-        country_code=country_code,
-        common_name=common_name,
-        serialnumber=serialnumber,
-        organization_name=organization_name,
-        organizational_unit_name=organizational_unit_name,
-    )
-
-    if useOtherName:
-        request = request.add_extension(
-            alternative_name,
-            critical=False,
-        )
-
-    request = request.sign(private_key, hashes.SHA256())
-
-    # Create certificate with an "infinite" far away expiration date
-    cert = generate_certificate_builder(
-        request,
-        ca_cert=ca_cert,
-        subject_key_identifier_set=False,
-        expiration_date=datetime.datetime(9999, 12, 31),
-    )
-    cert = cert.add_extension(
-        x509.KeyUsage(
-            digital_signature=True,
-            key_encipherment=True,
-            content_commitment=False,
-            data_encipherment=False,
-            key_agreement=False,
-            encipher_only=False,
-            decipher_only=False,
-            key_cert_sign=False,
-            crl_sign=False,
-        ),
-        critical=True,
-    ).add_extension(MASAURLExt(masa_url), critical=False)
-
-    cert = sign_certificate(ca_cert, ca_key, cert)
-
-    save_cert_to_file(cert, dest_folder, common_name=common_name, file_prefix="cert")
-    return cert
-
-
-def MASAURLExt(uri: str) -> x509.ExtensionType:
-    """
-    Creates a MASA URL extension for a certificate.
-
-    Args:
-        uri (str): The MASA URL to be encoded in the extension.
-
-    Returns:
-        Extension: The MASA URL extension.
-    """
-
-    class MASAURLSyntax(char.IA5String):
-        pass
-
-    # Create an instance of MASAURLSyntax
-    masa_url = MASAURLSyntax(uri)
-    encoded_masa_url = encoder.encode(masa_url)[2:]  # Skip the first two bytes
-
-    return x509.UnrecognizedExtension(
-        oid=x509.ObjectIdentifier("1.3.6.1.5.5.7.1.32"), value=encoded_masa_url
-    )
-
-
-def generate_ldevid_cert_from_request(
-    request: x509.CertificateSigningRequest,
-    *,
-    ca_cert_path: str,
-    ca_key_path: str,
-    ca_passphrase_path: str,
-    dest_folder: str,
-) -> x509.Certificate:
-    """
-    Generates an LDevID certificate from a certificate request.
-
-    Args:
-        request (CertificateSigningRequest): The certificate signing request.
-        ca_cert_path (str): The file path of the CA certificate.
-        ca_key_path (str): The file path of the CA private key.
-        ca_passphrase_path (str): The file path of the passphrase for the CA private key.
-        dest_folder (str): The destination folder to save the generated certificate.
-        common_name (str): The common name for the generated certificate.
-
-    Returns:
-        Certificate: The generated LDevID certificate.
-
-    Raises:
-        ValueError: If the common name is not found in the certificate request
-    """
-
-    ca_cert, ca_key = load_ca(ca_cert_path, ca_key_path, ca_passphrase_path)
-
-    cert = generate_certificate_builder(
-        request,
-        ca_cert=ca_cert,
-        expiration_date=datetime.datetime(
-            9999, 12, 31
-        ),  # "infinite" far away expiration date
-    )
-    cert = sign_certificate(ca_cert, ca_key, cert)
-
-    common_name = request.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
-
-    if len(common_name) == 0:
-        raise ValueError("Common name not found in certificate request.")
-
-    common_name = str(common_name[0].value)
-
-    save_cert_to_file(cert, dest_folder, common_name=common_name)
-    return cert
-
-
-def generate_ldevid_request(
-    *,
-    dest_folder_request: str,
-    dest_folder_key: str,
-    country_code: str,
-    serialnumber: str,
-    common_name: str,
-) -> tuple[x509.CertificateSigningRequest, str, str, str]:
-    """
-    Generate an LDevID certificate request.
-
-    Args:
-        dest_folder_request (str): Destination folder to save the certificate request.
-        dest_folder_key (str): Destination folder to save the private key.
-        country_code (str): Country code for the certificate request.
-        serialnumber (str): Serial number for the device.
-        common_name (str): Common name for the device certificate.
-
-    Returns:
-        Tuple:
-        - CertificateSigningRequest: Generated certificate request.
-        - str: Path to the saved certificate request
-        - str: Path to the saved private key
-    """
-
-    private_key, private_key_path, passphrase_file_path = setup_private_key(
-        dest_folder_key, common_name
-    )
-
-    # Generate CSR
-    request = generate_certificate_request_builder(
-        country_code=country_code, common_name=common_name, serialnumber=serialnumber
-    ).sign(private_key, hashes.SHA256())
-
-    request_file_path = save_request_to_file(
-        request, dest_folder=dest_folder_request, common_name=common_name
-    )
-
-    return request, request_file_path, private_key_path, passphrase_file_path

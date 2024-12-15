@@ -1,5 +1,5 @@
 import tkinter as tk
-from GenerateCertificateWindow import GenerateCertificate
+from GenerateCertificateRequestWindow import GenerateCertificateRequest
 from shared_util.Config import Config
 
 
@@ -73,7 +73,7 @@ class MainWindow:
 
         tk.Button(
             self.button_frame,
-            text="Zertifikat generieren",
+            text="Zertifikatanfrage generieren",
             command=self.open_generateWindow,
             bg="#2196f3",
             fg="white",
@@ -103,7 +103,7 @@ class MainWindow:
 
     def open_generateWindow(self):
         gen_cert = tk.Tk()
-        app = GenerateCertificate(gen_cert)
+        app = GenerateCertificateRequest(gen_cert)
         gen_cert.mainloop()
         pass
 

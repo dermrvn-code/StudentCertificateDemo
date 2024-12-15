@@ -1,8 +1,8 @@
 from datetime import UTC, datetime, timedelta
 from os import path
 
-from Certificates.Certificate import load_certificate_from_path
-from Certificates.Keys import load_passphrase_from_path, load_private_key_from_path
+from Certificate import load_certificate_from_path
+from Keys import load_passphrase_from_path, load_private_key_from_path
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
 

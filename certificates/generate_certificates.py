@@ -6,13 +6,15 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.abspath(os.path.join(script_dir, os.pardir))
 sys.path.append(parent_dir)
 
-from Certificates.CA import generate_certificate_authority
-from Certificates.Certificate import (generate_idevid_cert, generate_ra_cert,
-                                      generate_tls_client_cert,
-                                      generate_tls_server_cert)
-from Certificates.CertificateRevocationList import \
-    generate_certificate_revocation_list
-from Certificates.clear_certificates import clear_certificates
+from CA import generate_certificate_authority
+from Certificate import (
+    generate_idevid_cert,
+    generate_ra_cert,
+    generate_tls_client_cert,
+    generate_tls_server_cert,
+)
+from CertificateRevocationList import generate_certificate_revocation_list
+from clear_certificates import clear_certificates
 from Utils.Config import Config
 
 

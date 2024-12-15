@@ -1,11 +1,11 @@
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 import tkinter as tk
-from functions import generate_certificate
+from functions import generate_certificate_request
 
 from shared_util.Config import Config
 
 
-class GenerateCertificate:
+class GenerateCertificateRequest:
     def __init__(self, root):
         self.root = root
         self.root.title("Student Certificate Generator")
@@ -15,7 +15,7 @@ class GenerateCertificate:
         # Title Label
         title_label = tk.Label(
             root,
-            text="Zertifikat Generator",
+            text="Anfrage generieren...",
             font=("Arial", 16, "bold"),
             bg="#f0f8ff",
             fg="#333",
@@ -50,7 +50,7 @@ class GenerateCertificate:
 
         generate_button = tk.Button(
             button_frame,
-            text="Zertifikat generieren",
+            text="Anfrage generieren",
             command=self.request_certificate,
             bg="#2196f3",
             fg="white",
@@ -78,20 +78,33 @@ class GenerateCertificate:
 
         # Get student information
         name = self.name_entry.get()
-        matriclenr = self.matricle_entry.get()
+        matriclenr = int(self.matricle_entry.get())
         email = self.email_entry.get()
 
         if not name or not email or not matriclenr:
-            messagebox.showwarning("Warning", "Please fill out all fields!")
+            messagebox.showwarning("Warnung", "Bitte alle Felder ausfüllen!")
             return
 
-        success, msg = generate_certificate(name, email, matriclenr)
+        request_bytes = generate_certificate_request(name, email, matriclenr)
 
-        if success:
-            messagebox.showinfo(title="Erfolgreich", message="Zertifikat generiert!")
+        if request_bytes:
             Config.set("USERDATA", "name", name, folder="student_client")
             Config.set("USERDATA", "email", email, folder="student_client")
-            Config.set("USERDATA", "matriclenr", matriclenr, folder="student_client")
+            Config.set(
+                "USERDATA", "matriclenr", str(matriclenr), folder="student_client"
+            )
+            save_path = filedialog.asksaveasfilename(
+                initialfile=f"{name}_{matriclenr}.csr",
+                defaultextension=".csr",
+                filetypes=[("Zertifikatanfrage", "*.csr"), ("Alle Dateien", "*.*")],
+                title="Anfrage speichern",
+            )
+            messagebox.showinfo(title="Erfolgreich", message="Zertifikat generiert!")
             self.root.destroy()
+            if save_path:
+                with open(save_path, "wb") as f:
+                    f.write(request_bytes)
         else:
-            messagebox.showerror(title="Error", message=msg)
+            messagebox.showerror(
+                title="Error", message="Fehler beim Erstellen der Anfrage!"
+            )
