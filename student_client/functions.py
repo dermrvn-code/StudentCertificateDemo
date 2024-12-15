@@ -1,5 +1,6 @@
 import os
 import sys
+from tkinter import filedialog, messagebox
 from cryptography.hazmat.primitives import hashes, serialization
 
 # Add parent directory to path
@@ -11,7 +12,7 @@ from certificates.Keys import generate_passphrase, generate_rsa_keys
 from certificates.Certificate import generate_certificate_request_builder
 
 
-def generate_certificate_request(name: str, email: str, matriclenr: int) -> bytes:
+def generate_certificate_request(name: str, matriclenr: int) -> bytes:
     dest = os.path.join(script_dir, "data")
     if not os.path.exists(dest):
         os.makedirs(dest)
@@ -32,3 +33,22 @@ def generate_certificate_request(name: str, email: str, matriclenr: int) -> byte
     request_bytes = cert_request.public_bytes(encoding=serialization.Encoding.PEM)
 
     return request_bytes
+
+
+def upload_certificate():
+    dest = os.path.join(script_dir, "data")
+    if not os.path.exists(dest):
+        os.makedirs(dest)
+
+    open_path = filedialog.askopenfilename(
+        defaultextension=".crt",
+        filetypes=[("Zertifikat", "*.crt"), ("Alle Dateien", "*.*")],
+        title="Hochladen",
+    )
+
+    if open_path:
+        dest_path = os.path.join(dest, "cert.cert")
+        with open(open_path, "rb") as src_file:
+            with open(dest_path, "wb") as dest_file:
+                dest_file.write(src_file.read())
+        messagebox.showinfo(title="Erfolgreich", message="Zertifikat hochgeladen!")

@@ -38,12 +38,6 @@ class GenerateCertificateRequest:
         self.matricle_entry = tk.Entry(form_frame, width=30)
         self.matricle_entry.grid(row=1, column=1, pady=5)
 
-        tk.Label(form_frame, text="Email:", bg="#f0f8ff", anchor="w").grid(
-            row=2, column=0, sticky="w"
-        )
-        self.email_entry = tk.Entry(form_frame, width=30)
-        self.email_entry.grid(row=2, column=1, pady=5)
-
         # Button Frame
         button_frame = tk.Frame(root, bg="#f0f8ff")
         button_frame.pack(pady=10)
@@ -79,27 +73,21 @@ class GenerateCertificateRequest:
         # Get student information
         name = self.name_entry.get()
         matriclenr = int(self.matricle_entry.get())
-        email = self.email_entry.get()
 
-        if not name or not email or not matriclenr:
+        if not name or not matriclenr:
             messagebox.showwarning("Warnung", "Bitte alle Felder ausfüllen!")
             return
 
-        request_bytes = generate_certificate_request(name, email, matriclenr)
+        request_bytes = generate_certificate_request(name, matriclenr)
 
         if request_bytes:
-            Config.set("USERDATA", "name", name, folder="student_client")
-            Config.set("USERDATA", "email", email, folder="student_client")
-            Config.set(
-                "USERDATA", "matriclenr", str(matriclenr), folder="student_client"
-            )
             save_path = filedialog.asksaveasfilename(
                 initialfile=f"{name}_{matriclenr}.csr",
                 defaultextension=".csr",
                 filetypes=[("Zertifikatanfrage", "*.csr"), ("Alle Dateien", "*.*")],
                 title="Anfrage speichern",
             )
-            messagebox.showinfo(title="Erfolgreich", message="Zertifikat generiert!")
+            messagebox.showinfo(title="Erfolgreich", message="Anfrage gespeichert")
             self.root.destroy()
             if save_path:
                 with open(save_path, "wb") as f:

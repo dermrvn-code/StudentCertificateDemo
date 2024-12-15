@@ -1,2 +1,2 @@
 @echo off 
-.\.demo_env\Scripts\activate
+.\.venv\Scripts\activate
