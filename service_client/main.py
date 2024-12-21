@@ -23,6 +23,7 @@ def home():
 def upload_file():
     if request.method == "POST":
         file = request.files["file"]
+        file_sig = request.files["file_sig"]
         matriculation_number = request.form["matriculation_number"]
         file_name = request.form["file_name"]
         if file:
@@ -33,6 +34,16 @@ def upload_file():
             new_file_name += file_ext
             file_path = os.path.join(upload_folder, new_file_name)
             file.save(file_path)
+
+        if file_sig:
+            upload_folder = os.path.join(script_dir, "uploads")
+            os.makedirs(upload_folder, exist_ok=True)
+            new_file_name = f"{matriculation_number}_{file_name}"
+            file_ext = os.path.splitext(file_sig.filename)[1]
+            new_file_name += file_ext
+            file_path = os.path.join(upload_folder, new_file_name)
+            file_sig.save(file_path)
+
             return redirect("../")
     return render_template("upload_file.html")
 
