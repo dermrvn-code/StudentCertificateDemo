@@ -1,13 +1,37 @@
 import tkinter as tk
+from tkinter import filedialog
+from tkinter import messagebox
 from GenerateCertificateRequestWindow import GenerateCertificateRequest
-from functions import upload_certificate
+from functions import (
+    upload_certificate,
+    sign_file,
+    encrypt_file,
+    upload_inst_certificate,
+)
+import os
+import sys
+
+# Add parent directory to path
+script_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.abspath(os.path.join(script_dir, os.pardir))
+sys.path.append(parent_dir)
+
+
+from certificates.Certificate import load_certificate_from_path
+from cryptography.x509.oid import NameOID
 
 
 class MainWindow:
     def __init__(self, root):
+        self.name = "-"
+        self.matricle = "-"
+        self.institute = "-"
+
+        self.allowed_file_types = "*.pdf;*.doc;*.xls;*.ppt;*.txt;*.zip;*.rar;*.7z"
+
         self.root = root
         self.root.title("Student-Manager")
-        self.root.geometry("400x400")
+        self.root.geometry("400x475")
         self.root.configure(bg="#f0f8ff")
 
         # Title Label
@@ -53,6 +77,21 @@ class MainWindow:
         )
         self.matricle_label.grid(row=1, column=1, sticky="w")
 
+        tk.Label(
+            self.data_frame,
+            text="Institut:",
+            bg="#f0f8ff",
+            anchor="w",
+            font=("Arial", 10, "bold"),
+        ).grid(row=2, column=0, sticky="w")
+        self.institute_label = tk.Label(
+            self.data_frame,
+            text="-",
+            bg="#f0f8ff",
+            anchor="w",
+        )
+        self.institute_label.grid(row=2, column=1, sticky="w")
+
         self.data_frame.pack(pady=10, padx=20)
 
         self.button_frame = tk.Frame(root, bg="#f0f8ff")
@@ -60,8 +99,8 @@ class MainWindow:
 
         tk.Button(
             self.button_frame,
-            text="Zertifikat hochladen",
-            command=self.upload_certificate,
+            text="Datei signieren",
+            command=self.sign_file,
             bg="#2196f3",
             fg="white",
             font=("Arial", 14, "bold"),
@@ -70,8 +109,8 @@ class MainWindow:
 
         tk.Button(
             self.button_frame,
-            text="Zertifikat-Anfrage generieren",
-            command=self.open_generateWindow,
+            text="Datei verschlüsseln",
+            command=self.encrypt_file,
             bg="#2196f3",
             fg="white",
             font=("Arial", 14, "bold"),
@@ -80,9 +119,9 @@ class MainWindow:
 
         tk.Button(
             self.button_frame,
-            text="Datei signieren",
-            command=self.open_signWindow,
-            bg="#2196f3",
+            text="Zertifikat-Anfrage generieren",
+            command=self.open_generateWindow,
+            bg="#424242",
             fg="white",
             font=("Arial", 14, "bold"),
             relief="flat",
@@ -90,16 +129,29 @@ class MainWindow:
 
         tk.Button(
             self.button_frame,
-            text="Datei verschlüsseln",
-            command=self.open_encryptWindow,
-            bg="#2196f3",
+            text="Zertifikat hochladen",
+            command=self.call_upload_certificate,
+            bg="#424242",
             fg="white",
             font=("Arial", 14, "bold"),
             relief="flat",
         ).grid(row=3, column=0, padx=10, pady=10)
 
-    def upload_certificate(self):
+        tk.Button(
+            self.button_frame,
+            text="Institut Zertifikat hochladen",
+            command=self.call_upload_inst_certificate,
+            bg="#424242",
+            fg="white",
+            font=("Arial", 14, "bold"),
+            relief="flat",
+        ).grid(row=4, column=0, padx=10, pady=10)
+
+    def call_upload_certificate(self):
         upload_certificate()
+
+    def call_upload_inst_certificate(self):
+        upload_inst_certificate()
 
     def open_generateWindow(self):
         gen_cert = tk.Tk()
@@ -107,11 +159,31 @@ class MainWindow:
         gen_cert.mainloop()
         pass
 
-    def open_signWindow(self):
-        pass
+    def sign_file(self):
+        if self.name == "-" or self.matricle == "-":
+            messagebox.showerror(
+                title="Fehler", message="Bitte laden Sie zuerst Ihr Zertifikat hoch!"
+            )
+            return
 
-    def open_encryptWindow(self):
-        pass
+        open_path = filedialog.askopenfilename(
+            filetypes=[("Ausgewählte Dateien", self.allowed_file_types)],
+            title="Hochladen",
+        )
+
+        if open_path:
+            suffix = f"{self.name.replace(' ', '-').lower()}_{self.matricle}"
+
+            sign_file(open_path, suffix)
+
+    def encrypt_file(self):
+        open_path = filedialog.askopenfilename(
+            filetypes=[("Ausgewählte Dateien", self.allowed_file_types)],
+            title="Hochladen",
+        )
+
+        if open_path:
+            encrypt_file(open_path)
 
     def update_loop(self):
 
@@ -125,13 +197,40 @@ class MainWindow:
         loop(self)  # Start the update process
 
     def update_user_data(self):
-        pass
-        """if "" in (name, matricle):
-            return
 
-        self.name_label["text"] = name
-        self.matricle_label["text"] = matricle
+        student_cert_path = os.path.join(script_dir, "data", "cert.cert")
 
-        self.button_frame.pack_forget()
-        self.data_frame.pack(padx=10, pady=10)
-        self.button_frame.pack(padx=10, pady=10)"""
+        if os.path.exists(student_cert_path):
+
+            cert = load_certificate_from_path(student_cert_path)
+
+            common_name = cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[
+                0
+            ].value
+            common_name = common_name.split("_")
+            self.name = common_name[0].replace("-", " ")
+            self.matricle = common_name[1]
+
+        else:
+            self.name = "-"
+            self.matricle = "-"
+
+        inst_cert_path = os.path.join(script_dir, "data", "inst_cert.cert")
+
+        if os.path.exists(inst_cert_path):
+
+            try:
+                cert = load_certificate_from_path(inst_cert_path)
+                self.institute = cert.subject.get_attributes_for_oid(
+                    NameOID.ORGANIZATION_NAME
+                )[0].value
+            
+            except:
+                self.institute = "-"
+           
+        else:
+            self.institute = "-"
+
+        self.name_label["text"] = self.name
+        self.matricle_label["text"] = self.matricle
+        self.institute_label["text"] = self.institute

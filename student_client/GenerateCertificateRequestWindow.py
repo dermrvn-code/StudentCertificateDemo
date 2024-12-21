@@ -2,8 +2,6 @@ from tkinter import messagebox, filedialog
 import tkinter as tk
 from functions import generate_certificate_request
 
-from shared_util.Config import Config
-
 
 class GenerateCertificateRequest:
     def __init__(self, root):
@@ -81,6 +79,7 @@ class GenerateCertificateRequest:
         request_bytes = generate_certificate_request(name, matriclenr)
 
         if request_bytes:
+            name = name.replace(" ", "-")
             save_path = filedialog.asksaveasfilename(
                 initialfile=f"{name}_{matriclenr}.csr",
                 defaultextension=".csr",
