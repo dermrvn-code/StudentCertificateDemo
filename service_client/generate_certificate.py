@@ -25,6 +25,8 @@ def main():
         country_code="DE",
         common_name="CampusOfficeHSHL",
         hostname="localhost",
+        organization_name="HSHL",
+        organizational_unit_name="CampusOffice",
     )
 
 

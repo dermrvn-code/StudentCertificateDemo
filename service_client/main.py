@@ -46,7 +46,6 @@ def upload_request():
             response = app.response_class(
                 response=cert_bytes,
                 status=200,
-                mimetype="application/x-x509-ca-cert",
                 headers={
                     "Content-Disposition": "attachment; filename=certificate.crt",
                 },
@@ -60,10 +59,10 @@ def download_cert():
     cert_bytes = load_certificate_bytes_from_path(
         os.path.join(script_dir, "certs", "cert_campusofficehshl.crt")
     )
+    print(cert_bytes)
     response = app.response_class(
         response=cert_bytes,
         status=200,
-        mimetype="application/x-x509-ca-cert",
         headers={
             "Content-Disposition": "attachment; filename=InstituteCertificate.crt",
         },
