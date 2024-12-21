@@ -65,7 +65,7 @@ def download_cert():
         status=200,
         mimetype="application/x-x509-ca-cert",
         headers={
-            "Content-Disposition": "attachment; filename=COCertificate.crt",
+            "Content-Disposition": "attachment; filename=InstituteCertificate.crt",
         },
     )
     return response

@@ -26,4 +26,5 @@ __pycache__/
 *.log
 **/data/*
 **/uploads/*
+**/student_certs/*
 **/temp/*
