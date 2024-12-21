@@ -9,9 +9,11 @@ sys.path.append(parent_dir)
 from certificates.Certificate import (
     load_request_from_bytes,
     generate_certificate_builder,
+    save_cert_to_file,
 )
 from certificates.CA import load_ca, sign_certificate
 from cryptography.hazmat.primitives import serialization
+from cryptography.x509.oid import NameOID
 
 
 def generate_certificate(request: bytes):
@@ -22,17 +24,14 @@ def generate_certificate(request: bytes):
         os.path.join(cert_folder, "passphrase_cacampusofficehshl.txt"),
     )
     csr = load_request_from_bytes(request)
-    print(csr)
 
     cert = generate_certificate_builder(csr, ca_cert=ca_cert)
     cert = sign_certificate(ca_cert, ca_key, cert)
 
     cert_bytes = cert.public_bytes(encoding=serialization.Encoding.PEM)
 
-    # temp_folder = os.path.join(script_dir, "temp")
-    # os.makedirs(temp_folder, exist_ok=True)
-    # cert_path = os.path.join(temp_folder, "generated_certificate.pem")
-    # with open(cert_path, "wb") as cert_file:
-    #     cert_file.write(cert_bytes)
+    save_path = os.path.join(script_dir, "student_certs")
+    common_name = csr.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value
+    save_cert_to_file(cert, save_path, common_name=common_name)
 
     return cert_bytes
