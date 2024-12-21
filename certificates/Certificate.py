@@ -103,7 +103,7 @@ def load_certificate_bytes_from_certificate(certfile: x509.Certificate) -> bytes
     Returns:
         bytes: The bytes representation of the certificate.
     """
-    return certfile.public_bytes(serialization.Encoding.DER)
+    return certfile.public_bytes(serialization.Encoding.PEM)
 
 
 def load_certificate_bytes_from_path(path) -> bytes:
@@ -312,6 +312,8 @@ def generate_tls_server_cert(
     common_name: str,
     hostname: str,
     expiration_days: int = 365,
+    organization_name: str = None,
+    organizational_unit_name: str = None,
 ) -> x509.Certificate:
     """
     Generate a simple device certificate.
@@ -334,7 +336,11 @@ def generate_tls_server_cert(
 
     # Generate CSR
     request = generate_certificate_request_builder(
-        country_code=country_code, common_name=common_name, hostname=hostname
+        country_code=country_code,
+        common_name=common_name,
+        hostname=hostname,
+        organization_name=organization_name,
+        organizational_unit_name=organizational_unit_name,
     )
 
     request = request.add_extension(
