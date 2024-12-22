@@ -137,9 +137,15 @@ def sign_file(open_path, suffix):
 
 
 # Encrypt file using public certificate
-def encrypt_file(file_location):
+def encrypt_file(file_location, inst_cert=True):
 
-    cert_location = os.path.join(script_dir, "data", "inst_cert.cert")
+    if inst_cert:
+        cert_name = "inst_cert"
+    else:
+        cert_name = "cert"
+
+    cert_location = os.path.join(script_dir, "data", f"{cert_name}.cert")
+    print(cert_location)
     cert = load_certificate_from_path(cert_location)
     public_key = cert.public_key()
 
@@ -175,3 +181,92 @@ def encrypt_file(file_location):
         "Erfolg",
         f"Datei erfolgreich verschlüsselt.\nDatei gespeichert unter {file_location}.enc",
     )
+
+
+def decrypt_file(open_path, suffix):
+
+    # Read encrypted data
+    key = get_private_key(suffix)
+
+    if key is None:
+        messagebox.showerror("Fehler", "Privater Schlüssel nicht gefunden.")
+        return
+
+    with open(open_path, "rb") as f:
+        combined_data = f.read()
+
+    # Extract encrypted Fernet key and encrypted file content
+    encrypted_fernet_key = combined_data[:256]
+    encrypted_data = combined_data[256:]
+
+    try:
+        # Decrypt Fernet key with RSA private key
+        fernet_key = key.decrypt(
+            encrypted_fernet_key,
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None,
+            ),
+        )
+    except:
+        messagebox.showerror("Fehler", "Entschlüsselung fehlgeschlagen.")
+        return
+
+    # Decrypt file content with Fernet key
+    fernet = Fernet(fernet_key)
+    decrypted_data = fernet.decrypt(encrypted_data)
+
+    # Save decrypted file
+    with open(open_path.replace(".enc", ""), "wb") as f:
+        f.write(decrypted_data)
+
+    messagebox.showinfo("Erfolg", "Datei erfolgreich entschlüsselt.")
+
+
+def verify_file(open_path, check_with_inst_cert):
+
+    if check_with_inst_cert:
+        inst_cert_path = os.path.join(script_dir, "data", "inst_cert.cert")
+
+        if not os.path.exists(inst_cert_path):
+            messagebox.showerror("Fehler", "Institutszertifikat nicht gefunden.")
+            return
+
+        inst_cert = load_certificate_from_path(inst_cert_path)
+        pubkey = inst_cert.public_key()
+    else:
+        cert_path = os.path.join(script_dir, "data", "cert.cert")
+
+        if not os.path.exists(cert_path):
+            messagebox.showerror("Fehler", "Zertifikat nicht gefunden.")
+            return
+
+        cert = load_certificate_from_path(cert_path)
+        pubkey = cert.public_key()
+
+    print(open_path)
+
+    # Read file content
+    with open(open_path, "rb") as file:
+        file_data = file.read()
+        prehashed = hashlib.sha256(file_data).digest()
+
+    with open(open_path + ".sig", "rb") as s:
+        sig = s.read()
+        decoded_sig = base64.b64decode(sig)
+
+    try:
+        pubkey.verify(
+            decoded_sig,
+            prehashed,
+            padding.PSS(
+                mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH
+            ),
+            hashes.SHA256(),
+        )
+        messagebox.showinfo("Erfolgreich", "Signatur ist valide!")
+        print("valid!")
+
+    except:
+        messagebox.showerror("Fehler", "Signatur konnte nicht verifiziert werden.")

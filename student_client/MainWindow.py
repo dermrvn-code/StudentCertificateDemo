@@ -7,6 +7,8 @@ from functions import (
     sign_file,
     encrypt_file,
     upload_inst_certificate,
+    decrypt_file,
+    verify_file,
 )
 import os
 import sys
@@ -27,11 +29,11 @@ class MainWindow:
         self.matricle = "-"
         self.institute = "-"
 
-        self.allowed_file_types = "*.pdf;*.doc;*.xls;*.ppt;*.txt;*.zip;*.rar;*.7z"
+        self.allowed_file_types = "*.pdf;*.docx;*.xls;*.ppt;*.txt;*.zip;*.rar;*.7z"
 
         self.root = root
         self.root.title("Student-Manager")
-        self.root.geometry("400x475")
+        self.root.geometry("450x635")
         self.root.configure(bg="#f0f8ff")
 
         # Title Label
@@ -94,58 +96,104 @@ class MainWindow:
 
         self.data_frame.pack(pady=10, padx=20)
 
-        self.button_frame = tk.Frame(root, bg="#f0f8ff")
-        self.button_frame.pack(pady=10)
+        self.button_main_frame = tk.Frame(root, bg="#f0f8ff")
+        self.button_main_frame.pack(pady=10)
 
         tk.Button(
-            self.button_frame,
+            self.button_main_frame,
             text="Datei signieren",
-            command=self.sign_file,
+            command=self.call_sign_file,
             bg="#2196f3",
             fg="white",
             font=("Arial", 14, "bold"),
             relief="flat",
-        ).grid(row=0, column=0, padx=10, pady=10)
+        ).grid(row=0, column=0, padx=10, pady=5)
 
         tk.Button(
-            self.button_frame,
+            self.button_main_frame,
             text="Datei verschlüsseln",
-            command=self.encrypt_file,
+            command=lambda: self.call_encrypt_file(use_inst_cert=True),
             bg="#2196f3",
             fg="white",
             font=("Arial", 14, "bold"),
             relief="flat",
-        ).grid(row=1, column=0, padx=10, pady=10)
+        ).grid(row=1, column=0, padx=10, pady=5)
 
         tk.Button(
-            self.button_frame,
+            self.button_main_frame,
+            text="Datei entschlüsseln",
+            command=self.call_decrypt_file,
+            bg="#2196f3",
+            fg="white",
+            font=("Arial", 14, "bold"),
+            relief="flat",
+        ).grid(row=2, column=0, padx=10, pady=5)
+
+        tk.Button(
+            self.button_main_frame,
+            text="Dateisignatur prüfen",
+            command=lambda: self.call_verify_file(check_with_inst=False),
+            bg="#2196f3",
+            fg="white",
+            font=("Arial", 14, "bold"),
+            relief="flat",
+        ).grid(row=3, column=0, padx=10, pady=5)
+
+        self.button_second_frame = tk.Frame(root, bg="#f0f8ff")
+        self.button_second_frame.pack(pady=10)
+
+        tk.Button(
+            self.button_second_frame,
+            text="Dateisignatur prüfen (Institut)",
+            command=lambda: self.call_verify_file(check_with_inst=True),
+            bg="#ff6666",
+            fg="white",
+            font=("Arial", 14, "bold"),
+            relief="flat",
+        ).grid(row=0, column=0, padx=10, pady=5)
+
+        tk.Button(
+            self.button_second_frame,
+            text="Datei verschlüsseln (Institut)",
+            command=lambda: self.call_encrypt_file(use_inst_cert=False),
+            bg="#ff6666",
+            fg="white",
+            font=("Arial", 14, "bold"),
+            relief="flat",
+        ).grid(row=1, column=0, padx=10, pady=5)
+
+        self.button_third_frame = tk.Frame(root, bg="#f0f8ff")
+        self.button_third_frame.pack(pady=10)
+
+        tk.Button(
+            self.button_third_frame,
             text="Zertifikat-Anfrage generieren",
             command=self.open_generateWindow,
             bg="#424242",
             fg="white",
             font=("Arial", 14, "bold"),
             relief="flat",
-        ).grid(row=2, column=0, padx=10, pady=10)
+        ).grid(row=0, column=0, padx=10, pady=5)
 
         tk.Button(
-            self.button_frame,
+            self.button_third_frame,
             text="Zertifikat hochladen",
             command=self.call_upload_certificate,
             bg="#424242",
             fg="white",
             font=("Arial", 14, "bold"),
             relief="flat",
-        ).grid(row=3, column=0, padx=10, pady=10)
+        ).grid(row=1, column=0, padx=10, pady=5)
 
         tk.Button(
-            self.button_frame,
+            self.button_third_frame,
             text="Institut Zertifikat hochladen",
             command=self.call_upload_inst_certificate,
             bg="#424242",
             fg="white",
             font=("Arial", 14, "bold"),
             relief="flat",
-        ).grid(row=4, column=0, padx=10, pady=10)
+        ).grid(row=2, column=0, padx=10, pady=5)
 
     def call_upload_certificate(self):
         upload_certificate()
@@ -159,7 +207,7 @@ class MainWindow:
         gen_cert.mainloop()
         pass
 
-    def sign_file(self):
+    def call_sign_file(self):
         if self.name == "-" or self.matricle == "-":
             messagebox.showerror(
                 title="Fehler", message="Bitte laden Sie zuerst Ihr Zertifikat hoch!"
@@ -176,14 +224,35 @@ class MainWindow:
 
             sign_file(open_path, suffix)
 
-    def encrypt_file(self):
+    def call_encrypt_file(self, use_inst_cert=True):
         open_path = filedialog.askopenfilename(
             filetypes=[("Ausgewählte Dateien", self.allowed_file_types)],
             title="Hochladen",
         )
 
         if open_path:
-            encrypt_file(open_path)
+            encrypt_file(open_path, use_inst_cert)
+
+    def call_verify_file(self, check_with_inst):
+        open_path = filedialog.askopenfilename(
+            filetypes=[("Ausgewählte Dateien", self.allowed_file_types)],
+            title="Hochladen",
+        )
+
+        if open_path:
+            verify_file(open_path, check_with_inst)
+
+    def call_decrypt_file(self):
+        open_path = filedialog.askopenfilename(
+            filetypes=[("Veschlüsselte Dateien", "*.enc")],
+            title="Hochladen",
+        )
+
+        if open_path:
+            suffix = f"{self.name.replace(' ', '-').lower()}_{self.matricle}"
+
+            decrypt_file(open_path, suffix)
+        pass
 
     def update_loop(self):
 
@@ -224,10 +293,10 @@ class MainWindow:
                 self.institute = cert.subject.get_attributes_for_oid(
                     NameOID.ORGANIZATION_NAME
                 )[0].value
-            
+
             except:
                 self.institute = "-"
-           
+
         else:
             self.institute = "-"
 
