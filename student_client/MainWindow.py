@@ -32,14 +32,14 @@ class MainWindow:
         self.allowed_file_types = "*.pdf;*.docx;*.xls;*.ppt;*.txt;*.zip;*.rar;*.7z"
 
         self.root = root
-        self.root.title("Student-Manager")
+        self.root.title("Studierenden Client")
         self.root.geometry("450x635")
         self.root.configure(bg="#f0f8ff")
 
         # Title Label
         title_label = tk.Label(
             root,
-            text="Student-Manager",
+            text="Studierenden Client",
             font=("Arial", 16, "bold"),
             bg="#f0f8ff",
             fg="#333",
