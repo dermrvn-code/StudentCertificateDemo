@@ -9,7 +9,6 @@ __pycache__/
 
 # Environment
 .*venv/
-**/brski-py
 
 # Sphinx
 **/docs/build/*
@@ -20,7 +19,6 @@ __pycache__/
 *.crt
 *.key
 *.pem
-*.crl
 *.csr
 *passphrase*.txt
 *.log

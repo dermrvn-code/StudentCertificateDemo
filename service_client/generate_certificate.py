@@ -29,6 +29,8 @@ def main():
         organizational_unit_name="CampusOffice",
     )
 
+    print("Certificates generated successfully.")
+
 
 if __name__ == "__main__":
     main()

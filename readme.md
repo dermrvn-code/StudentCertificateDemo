@@ -22,7 +22,7 @@ To install the Student Certificate Demo, follow these steps:
 1. Clone the repository:
 
    ```shell
-   git clone https://github.com/dermrvn-code/...
+   git clone https://github.com/dermrvn-code/StudentCertificateDemo
    ```
 
 2. Install the required dependencies:
@@ -44,5 +44,31 @@ To use the Student Certificate Demo, follow these steps:
    ```shell
    start_env.bat
    ```
+
+2. Generate all certificates:
+
+   ```shell
+   py service_client\generate_certificate.py
+   ```
+
+3. Start the student-client:
+
+   ```shell
+   py student_client\main.py
+   ```
+
+4. Start the service-client:
+
+   ```shell
+   py service_client\main.py
+   ```
+
+5. Generate the certificate request in the student-client
+
+6. Upload the certificate request in the service-client and download the certificates
+
+7. Upload both the personal and the public institution certificate in the student-client
+
+8. Have fun with the Student Certificate Demo!
 
 [(Back to top)](#table-of-contents)

@@ -27,7 +27,7 @@ def install_requirements(env_path, requirements_file):
 
 
 def main():
-    env_path = ".demo_env"
+    env_path = ".venv"
 
     # Check if virtual environment already exists
     if not os.path.exists(env_path):
@@ -44,7 +44,7 @@ def main():
         print("requirements.txt not found.")
 
     print(
-        "Setup complete. Virtual environment '.brski_env' is ready and dependencies are installed. Run start_env.bat to activate the environment in the command prompt."
+        "Setup complete. Virtual environment '.venv' is ready and dependencies are installed. Run start_env.bat to activate the environment in the command prompt."
     )
 
 
