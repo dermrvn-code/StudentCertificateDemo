@@ -44,7 +44,7 @@ def upload_file():
             file_path = os.path.join(upload_folder, new_file_name)
             file_sig.save(file_path)
 
-            return redirect("../")
+        return redirect("../")
     return render_template("upload_file.html")
 
 

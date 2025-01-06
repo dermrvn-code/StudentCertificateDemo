@@ -31,7 +31,7 @@ def generate_certificate(request: bytes):
     cert_bytes = cert.public_bytes(encoding=serialization.Encoding.PEM)
 
     save_path = os.path.join(script_dir, "student_certs")
-    common_name = csr.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[1].value
-    save_cert_to_file(cert, save_path, common_name=common_name)
+    common_name = csr.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value
+    save_cert_to_file(cert, save_path, common_name=str(common_name))
 
     return cert_bytes

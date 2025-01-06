@@ -120,7 +120,7 @@ def sign_file(open_path, suffix):
     signature = private_key.sign(
         prehashed,
         padding.PSS(
-            mgf=padding.MGF1(hashes.SyHA256()), salt_length=padding.PSS.MAX_LENGTH
+            mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH
         ),
         hashes.SHA256(),
     )

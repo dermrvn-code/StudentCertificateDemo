@@ -132,7 +132,7 @@ class MainWindow:
         tk.Button(
             self.button_main_frame,
             text="Dateisignatur prüfen",
-            command=lambda: self.call_verify_file(check_with_inst=False),
+            command=lambda: self.call_verify_file(check_with_inst=True),
             bg="#2196f3",
             fg="white",
             font=("Arial", 14, "bold"),
@@ -145,7 +145,7 @@ class MainWindow:
         tk.Button(
             self.button_second_frame,
             text="Dateisignatur prüfen (Institut)",
-            command=lambda: self.call_verify_file(check_with_inst=True),
+            command=lambda: self.call_verify_file(check_with_inst=False),
             bg="#ff6666",
             fg="white",
             font=("Arial", 14, "bold"),
