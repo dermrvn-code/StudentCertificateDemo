@@ -117,12 +117,12 @@ def sign_file(open_path, suffix):
         prehashed = hashlib.sha256(file_data).digest()
 
     # Sign the file
-    signature = private_key.sign(
+    signature = private_key.sign(  # type: ignore
         prehashed,
         padding.PSS(
             mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH
-        ),
-        hashes.SHA256(),
+        ),  # type: ignore
+        hashes.SHA256(),  # type: ignore
     )
 
     # Save the signature
@@ -153,7 +153,7 @@ def encrypt_file(file_location, inst_cert=True):
     fernet_key = Fernet.generate_key()
 
     # Encrypt Fernet key with RSA public key
-    encrypted_fernet_key = public_key.encrypt(
+    encrypted_fernet_key = public_key.encrypt(  # type: ignore
         fernet_key,
         padding.OAEP(
             mgf=padding.MGF1(algorithm=hashes.SHA256()),
@@ -201,7 +201,7 @@ def decrypt_file(open_path, suffix):
 
     try:
         # Decrypt Fernet key with RSA private key
-        fernet_key = key.decrypt(
+        fernet_key = key.decrypt(  # type: ignore
             encrypted_fernet_key,
             padding.OAEP(
                 mgf=padding.MGF1(algorithm=hashes.SHA256()),
@@ -257,13 +257,13 @@ def verify_file(open_path, check_with_inst_cert):
         decoded_sig = base64.b64decode(sig)
 
     try:
-        pubkey.verify(
+        pubkey.verify(  # type: ignore
             decoded_sig,
             prehashed,
             padding.PSS(
                 mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH
-            ),
-            hashes.SHA256(),
+            ),  # type: ignore
+            hashes.SHA256(),  # type: ignore
         )
         messagebox.showinfo("Erfolgreich", "Signatur ist valide!")
         print("valid!")
