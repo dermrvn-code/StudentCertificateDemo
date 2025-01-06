@@ -14,6 +14,7 @@
 
 - [Installation](#installation)
 - [Usage](#usage)
+- [Reset](#reset)
 
 ## Installation
 
@@ -70,5 +71,21 @@ To use the Student Certificate Demo, follow these steps:
 7. Upload both the personal and the public institution certificate in the student-client
 
 8. Have fun with the Student Certificate Demo!
+
+## Reset
+
+To reset the Student Certificate Demo, follow these steps:
+
+1. Start the environment:
+
+   ```shell
+   start_env.bat
+   ```
+
+2. Run the clear data script:
+
+   ```shell
+   py clear_data.py
+   ```
 
 [(Back to top)](#table-of-contents)

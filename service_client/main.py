@@ -30,7 +30,7 @@ def upload_file():
             upload_folder = os.path.join(script_dir, "uploads")
             os.makedirs(upload_folder, exist_ok=True)
             new_file_name = f"{matriculation_number}_{file_name}"
-            file_ext = os.path.splitext(file.filename)[1]
+            file_ext = os.path.splitext(file.filename or "")[1]
             new_file_name += file_ext
             file_path = os.path.join(upload_folder, new_file_name)
             file.save(file_path)
@@ -39,7 +39,7 @@ def upload_file():
             upload_folder = os.path.join(script_dir, "uploads")
             os.makedirs(upload_folder, exist_ok=True)
             new_file_name = f"{matriculation_number}_{file_name}"
-            file_ext = os.path.splitext(file_sig.filename)[1]
+            file_ext = os.path.splitext(file_sig.filename or "")[1]
             new_file_name += file_ext
             file_path = os.path.join(upload_folder, new_file_name)
             file_sig.save(file_path)
